@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<form>
+    Prefix:&nbsp;<input id="prefix"></input></br>
+    Input:&nbsp;<textarea id="input" rows="5" cols="60" name="text" placeholder="Enter text"></textarea></br>
+    Suffix:&nbsp;<input id="suffix"></input></br>
+    &nbsp;<input type="button" value="Filter IDs" onclick="onFilterIDsClicked()">&nbsp;
+    <input type="button" value="Convert newlines" onclick="onConvertNewLinesClicked()">&nbsp;
+    <input id="btn" type="button" value="Split" onclick="onSplitClicked()">&nbsp;
+</form>
+<br/><br/><br/>
+<div id="result">
+
+</div>
+
+<script>
+let input = document.getElementById("input");
+let prefix = document.getElementById("prefix");
+let suffix = document.getElementById("suffix");
+const urlParams = new URLSearchParams(window.location.search);
+input.value = urlParams.get('input') ?? "";
+prefix.value = urlParams.get('prefix') ?? "!ban ";
+suffix.value = urlParams.get('suffix') ?? " 1d";
+function splitStringIntoChunks(str, chunkSize) {
+    var chunks = [];
+    for (var i = 0; i < str.length; i += chunkSize) {
+        chunks.push(str.substring(i, i + chunkSize));
+    }
+    return chunks;
+}
+function splitString(n,str){
+    let arr = str?.split(' ');
+    let result=[]
+    let subStr=arr[0]
+    for(let i = 1; i < arr.length; i++){
+        let word = arr[i]
+        if(subStr.length + word.length + 1 <= n){
+            subStr = subStr + ' ' + word
+        }
+        else{
+            result.push(subStr);
+            subStr = word
+        }
+    }
+    if(subStr.length){result.push(subStr)}
+    return result
+}
+function remove_duplicates(arr) {
+    var obj = {};
+    var ret_arr = [];
+    for (var i = 0; i < arr.length; i++) {
+        obj[arr[i]] = true;
+    }
+    for (var key in obj) {
+        ret_arr.push(key);
+    }
+    return ret_arr;
+}
+function onFilterIDsClicked() {
+    const regex = /\b(\d{15,23})\b/gm;
+    let input = document.getElementById("input");
+    let ids = [];
+    while ((m = regex.exec(input.value)) !== null) {
+        if (m.index === regex.lastIndex) {
+            regex.lastIndex++;
+        }
+        let val = m[1].trim();
+        if (!ids.includes(val)) {
+            ids.push(val);
+        }
+    }
+    console.log(ids);
+    ids = remove_duplicates(ids);
+    console.log(ids);
+    input.value = ids.join(" ");
+}
+
+function onConvertNewLinesClicked() {
+    let input = document.getElementById("input");
+    input.value = input.value.replace("\n", " ")
+}
+
+function onSplitClicked() {
+    let input = document.getElementById("input").value;
+    let prefix = document.getElementById("prefix").value;
+    let suffix = document.getElementById("suffix").value;
+    let chunkSize = (2000-prefix.length)-suffix.length;
+    document.getElementById("btn").value = "Split into chunks of " + chunkSize;
+    let chunks = splitString(chunkSize, input);// splitStringIntoChunks(input, chunkSize);
+    let result = document.getElementById("result");
+    result.innerHTML = "";
+    chunks.forEach(element => {
+        let chunktext = prefix + element + suffix;
+        let area = "<textarea rows='5' cols='60'>" + chunktext + "</textarea>&nbsp;" + chunktext.length;
+        result.innerHTML += area + "<br/>";
+    });
+}
+</script>
+
+</body>
+</html>
